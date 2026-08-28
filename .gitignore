@@ -1,0 +1,12 @@
+# Virtual environment
+.venv/
+
+# Environment variables / secrets
+.env
+
+# Python
+__pycache__/
+*.pyc
+
+# Local GitQuarium state
+seen_commits.json
