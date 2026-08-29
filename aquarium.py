@@ -176,6 +176,61 @@ background = pygame.transform.scale(
 
 
 # -------------------------
+# Sound button
+# -------------------------
+
+sound_on_original = pygame.image.load(
+    "assets/ui/sound_on.png"
+).convert_alpha()
+
+sound_off_original = pygame.image.load(
+    "assets/ui/sound_off.png"
+).convert_alpha()
+
+SOUND_BUTTON_SCALE = 2
+
+sound_on_image = pygame.transform.scale(
+    sound_on_original,
+    (
+        sound_on_original.get_width()
+        * SOUND_BUTTON_SCALE,
+        sound_on_original.get_height()
+        * SOUND_BUTTON_SCALE,
+    ),
+)
+
+sound_off_image = pygame.transform.scale(
+    sound_off_original,
+    (
+        sound_off_original.get_width()
+        * SOUND_BUTTON_SCALE,
+        sound_off_original.get_height()
+        * SOUND_BUTTON_SCALE,
+    ),
+)
+
+sound_button_x = -20
+sound_button_y = 10
+
+sound_button_rect = pygame.Rect(
+    sound_button_x,
+    sound_button_y,
+    sound_on_image.get_width(),
+    sound_on_image.get_height(),
+)
+
+music_muted = False
+
+mouse_click_sound = pygame.mixer.Sound(
+    "assets/music/gq_mouse_fx.mp3"
+)
+
+mouse_click_sound.set_volume(
+    0.5
+)
+
+
+# -------------------------
 # Fish
 # -------------------------
 
@@ -544,6 +599,20 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1:
+                if sound_button_rect.collidepoint(
+                    event.pos
+                ):
+                    mouse_click_sound.play()
+
+                    music_muted = not music_muted
+
+                    if music_muted:
+                        pygame.mixer.music.pause()
+                    else:
+                        pygame.mixer.music.unpause()
+
     screen.blit(
         background,
         (0, 0),
@@ -567,6 +636,24 @@ while running:
     for little_guy in fish:
         little_guy.update()
         little_guy.draw()
+
+    # Draw sound button
+    if music_muted:
+        screen.blit(
+            sound_off_image,
+            (
+                sound_button_x,
+                sound_button_y,
+            ),
+        )
+    else:
+        screen.blit(
+            sound_on_image,
+            (
+                sound_button_x,
+                sound_button_y,
+            ),
+        )
 
     pygame.display.flip()
 
