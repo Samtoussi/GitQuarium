@@ -1,5 +1,6 @@
 import json
 import random
+from datetime import datetime, timezone
 
 import pygame
 
@@ -32,7 +33,81 @@ pygame.mixer.music.play(
 
 commits = get_recent_commits()
 
-print(f"GitQuarium found {len(commits)} commits.")
+print(
+    f"GitQuarium found {len(commits)} commits."
+)
+
+
+# -------------------------
+# Tank cleanliness
+# -------------------------
+
+def get_tank_background(commits):
+    if not commits:
+        print("No commits found.")
+        print("Tank status: ABSOLUTE SWAMP")
+
+        return "assets/background-03.png"
+
+    latest_commit_date = datetime.fromisoformat(
+        commits[0]["created_at"].replace(
+            "Z",
+            "+00:00",
+        )
+    )
+
+    now = datetime.now(
+        timezone.utc
+    )
+
+    days_since_commit = (
+        now - latest_commit_date
+    ).days
+
+    if days_since_commit <= 2:
+        background_path = (
+            "assets/background.png"
+        )
+
+        tank_status = "CLEAN"
+
+    elif days_since_commit <= 4:
+        background_path = (
+            "assets/background-01.png"
+        )
+
+        tank_status = "SLIGHTLY DIRTY"
+
+    elif days_since_commit <= 6:
+        background_path = (
+            "assets/background-02.png"
+        )
+
+        tank_status = "DIRTY"
+
+    else:
+        background_path = (
+            "assets/background-03.png"
+        )
+
+        tank_status = "ABSOLUTE SWAMP"
+
+    print(
+        f"Last commit: "
+        f"{days_since_commit} day(s) ago."
+    )
+
+    print(
+        f"Tank status: "
+        f"{tank_status}"
+    )
+
+    return background_path
+
+
+background_path = get_tank_background(
+    commits
+)
 
 
 # -------------------------
@@ -46,8 +121,13 @@ INITIAL_GITQUARIUM_SHA = "e245a90"
 
 def load_save():
     try:
-        with open(SAVE_FILE, "r") as file:
-            return json.load(file)
+        with open(
+            SAVE_FILE,
+            "r",
+        ) as file:
+            return json.load(
+                file
+            )
 
     except FileNotFoundError:
         return {
@@ -57,7 +137,10 @@ def load_save():
 
 
 def save_game(save_data):
-    with open(SAVE_FILE, "w") as file:
+    with open(
+        SAVE_FILE,
+        "w",
+    ) as file:
         json.dump(
             save_data,
             file,
@@ -68,7 +151,10 @@ def save_game(save_data):
 save_data = load_save()
 
 seen_commits = set(
-    save_data.get("seen_commits", [])
+    save_data.get(
+        "seen_commits",
+        [],
+    )
 )
 
 saved_fish = save_data.get(
@@ -102,9 +188,17 @@ if not seen_commits:
         saved_fish.append(
             {
                 "species": "mikey",
-                "commit_sha": initial_commit["sha"],
-                "commit_message": initial_commit["message"],
-                "repo": initial_commit["repo"],
+                "commit_sha": (
+                    initial_commit["sha"]
+                ),
+                "commit_message": (
+                    initial_commit[
+                        "message"
+                    ]
+                ),
+                "repo": (
+                    initial_commit["repo"]
+                ),
             }
         )
 
@@ -113,11 +207,15 @@ if not seen_commits:
             initial_commit["message"],
         )
 
-    save_data["seen_commits"] = list(
+    save_data[
+        "seen_commits"
+    ] = list(
         seen_commits
     )
 
-    save_data["fish"] = saved_fish
+    save_data[
+        "fish"
+    ] = saved_fish
 
     save_game(
         save_data
@@ -127,19 +225,22 @@ if not seen_commits:
 
     print(
         f"Baseline created with "
-        f"{len(seen_commits)} existing commits."
+        f"{len(seen_commits)} "
+        f"existing commits."
     )
 
 else:
     new_commits = [
         commit
         for commit in commits
-        if commit["sha"] not in seen_commits
+        if commit["sha"]
+        not in seen_commits
     ]
 
     print(
         f"GitQuarium found "
-        f"{len(new_commits)} new commits."
+        f"{len(new_commits)} "
+        f"new commits."
     )
 
 
@@ -151,7 +252,10 @@ WIDTH = 900
 HEIGHT = 500
 
 screen = pygame.display.set_mode(
-    (WIDTH, HEIGHT)
+    (
+        WIDTH,
+        HEIGHT,
+    )
 )
 
 pygame.display.set_caption(
@@ -166,12 +270,15 @@ clock = pygame.time.Clock()
 # -------------------------
 
 background_original = pygame.image.load(
-    "assets/background.png"
+    background_path
 ).convert()
 
 background = pygame.transform.scale(
     background_original,
-    (WIDTH, HEIGHT),
+    (
+        WIDTH,
+        HEIGHT,
+    ),
 )
 
 
@@ -221,6 +328,11 @@ sound_button_rect = pygame.Rect(
 
 music_muted = False
 
+
+# -------------------------
+# Sound effects
+# -------------------------
+
 mouse_click_sound = pygame.mixer.Sound(
     "assets/music/gq_mouse_fx.mp3"
 )
@@ -235,7 +347,11 @@ mouse_click_sound.set_volume(
 # -------------------------
 
 class Fish:
-    def __init__(self, name, image_path):
+    def __init__(
+        self,
+        name,
+        image_path,
+    ):
         self.name = name
 
         original_image = pygame.image.load(
@@ -244,18 +360,24 @@ class Fish:
 
         scale = 3
 
-        self.image_right = pygame.transform.scale(
-            original_image,
-            (
-                original_image.get_width() * scale,
-                original_image.get_height() * scale,
-            ),
+        self.image_right = (
+            pygame.transform.scale(
+                original_image,
+                (
+                    original_image.get_width()
+                    * scale,
+                    original_image.get_height()
+                    * scale,
+                ),
+            )
         )
 
-        self.image_left = pygame.transform.flip(
-            self.image_right,
-            True,
-            False,
+        self.image_left = (
+            pygame.transform.flip(
+                self.image_right,
+                True,
+                False,
+            )
         )
 
         self.x = random.randint(
@@ -273,11 +395,20 @@ class Fish:
         )
 
         self.speed_x = random.choice(
-            [-2, -1, 1, 2]
+            [
+                -2,
+                -1,
+                1,
+                2,
+            ]
         )
 
         self.speed_y = random.choice(
-            [-1, 0, 1]
+            [
+                -1,
+                0,
+                1,
+            ]
         )
 
     def update(self):
@@ -286,6 +417,7 @@ class Fish:
 
         if self.x <= 0:
             self.x = 0
+
             self.speed_x = abs(
                 self.speed_x
             )
@@ -305,6 +437,7 @@ class Fish:
 
         if self.y <= 0:
             self.y = 0
+
             self.speed_y = abs(
                 self.speed_y
             )
@@ -322,20 +455,31 @@ class Fish:
                 self.speed_y
             )
 
-        if random.randint(1, 120) == 1:
+        if random.randint(
+            1,
+            120,
+        ) == 1:
             self.speed_y = random.choice(
-                [-1, 0, 1]
+                [
+                    -1,
+                    0,
+                    1,
+                ]
             )
 
     def draw(self):
         if self.speed_x > 0:
             image = self.image_right
+
         else:
             image = self.image_left
 
         screen.blit(
             image,
-            (self.x, self.y),
+            (
+                self.x,
+                self.y,
+            ),
         )
 
 
@@ -435,10 +579,15 @@ def roll_species():
     rarity = roll_rarity()
 
     species = random.choice(
-        RARITY_POOLS[rarity]
+        RARITY_POOLS[
+            rarity
+        ]
     )
 
-    return species, rarity
+    return (
+        species,
+        rarity,
+    )
 
 
 # -------------------------
@@ -452,15 +601,22 @@ class Bubble:
         ).convert_alpha()
 
         scale = random.choice(
-            [1, 2]
+            [
+                1,
+                2,
+            ]
         )
 
-        self.image = pygame.transform.scale(
-            original_image,
-            (
-                original_image.get_width() * scale,
-                original_image.get_height() * scale,
-            ),
+        self.image = (
+            pygame.transform.scale(
+                original_image,
+                (
+                    original_image.get_width()
+                    * scale,
+                    original_image.get_height()
+                    * scale,
+                ),
+            )
         )
 
         self.x = random.randint(
@@ -468,9 +624,12 @@ class Bubble:
             WIDTH - 20,
         )
 
-        self.y = HEIGHT + random.randint(
-            0,
-            100,
+        self.y = (
+            HEIGHT
+            + random.randint(
+                0,
+                100,
+            )
         )
 
         self.speed_y = random.uniform(
@@ -490,7 +649,10 @@ class Bubble:
     def draw(self):
         screen.blit(
             self.image,
-            (self.x, self.y),
+            (
+                self.x,
+                self.y,
+            ),
         )
 
     def is_gone(self):
@@ -517,7 +679,11 @@ fish = [
 # -------------------------
 
 for owned_fish in saved_fish:
-    species_id = owned_fish["species"]
+    species_id = (
+        owned_fish[
+            "species"
+        ]
+    )
 
     species = FISH_SPECIES[
         species_id
@@ -536,7 +702,9 @@ for owned_fish in saved_fish:
 # -------------------------
 
 for commit in new_commits:
-    species_id, rarity = roll_species()
+    species_id, rarity = (
+        roll_species()
+    )
 
     species = FISH_SPECIES[
         species_id
@@ -553,9 +721,15 @@ for commit in new_commits:
         {
             "species": species_id,
             "rarity": rarity,
-            "commit_sha": commit["sha"],
-            "commit_message": commit["message"],
-            "repo": commit["repo"],
+            "commit_sha": (
+                commit["sha"]
+            ),
+            "commit_message": (
+                commit["message"]
+            ),
+            "repo": (
+                commit["repo"]
+            ),
         }
     )
 
@@ -564,7 +738,9 @@ for commit in new_commits:
     )
 
     print(
-        f"New {rarity.upper()} fish born:",
+        f"New "
+        f"{rarity.upper()} "
+        f"fish born:",
         species["name"],
         "|",
         commit["message"],
@@ -574,16 +750,24 @@ for commit in new_commits:
 
 
 if new_commits:
-    save_data["seen_commits"] = list(
+    save_data[
+        "seen_commits"
+    ] = list(
         seen_commits
     )
 
-    save_data["fish"] = saved_fish
+    save_data[
+        "fish"
+    ] = saved_fish
 
     save_game(
         save_data
     )
 
+
+# -------------------------
+# Bubbles
+# -------------------------
 
 bubbles = []
 
@@ -599,26 +783,40 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-        if event.type == pygame.MOUSEBUTTONDOWN:
+        if (
+            event.type
+            == pygame.MOUSEBUTTONDOWN
+        ):
             if event.button == 1:
-                if sound_button_rect.collidepoint(
-                    event.pos
+                if (
+                    sound_button_rect.collidepoint(
+                        event.pos
+                    )
                 ):
                     mouse_click_sound.play()
 
-                    music_muted = not music_muted
+                    music_muted = (
+                        not music_muted
+                    )
 
                     if music_muted:
                         pygame.mixer.music.pause()
+
                     else:
                         pygame.mixer.music.unpause()
 
     screen.blit(
         background,
-        (0, 0),
+        (
+            0,
+            0,
+        ),
     )
 
-    if random.randint(1, 35) == 1:
+    if random.randint(
+        1,
+        35,
+    ) == 1:
         bubbles.append(
             Bubble()
         )
@@ -646,6 +844,7 @@ while running:
                 sound_button_y,
             ),
         )
+
     else:
         screen.blit(
             sound_on_image,
