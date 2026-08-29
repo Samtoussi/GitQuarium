@@ -10,6 +10,23 @@ pygame.init()
 
 
 # -------------------------
+# Music
+# -------------------------
+
+pygame.mixer.music.load(
+    "assets/music/gitquarium-theme.mp3"
+)
+
+pygame.mixer.music.set_volume(
+    0.4
+)
+
+pygame.mixer.music.play(
+    -1
+)
+
+
+# -------------------------
 # GitHub
 # -------------------------
 
