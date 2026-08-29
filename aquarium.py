@@ -17,41 +17,100 @@ commits = get_recent_commits()
 
 print(f"GitQuarium found {len(commits)} commits.")
 
-SEEN_COMMITS_FILE = "seen_commits.json"
+
+# -------------------------
+# Save system
+# -------------------------
+
+SAVE_FILE = "save.json"
+
+INITIAL_GITQUARIUM_SHA = "e245a90"
 
 
-def load_seen_commits():
+def load_save():
     try:
-        with open(SEEN_COMMITS_FILE, "r") as file:
-            return set(json.load(file))
+        with open(SAVE_FILE, "r") as file:
+            return json.load(file)
+
     except FileNotFoundError:
-        return set()
+        return {
+            "seen_commits": [],
+            "fish": [],
+        }
 
 
-def save_seen_commits(seen_commits):
-    with open(SEEN_COMMITS_FILE, "w") as file:
+def save_game(save_data):
+    with open(SAVE_FILE, "w") as file:
         json.dump(
-            list(seen_commits),
+            save_data,
             file,
             indent=4,
         )
 
 
-seen_commits = load_seen_commits()
+save_data = load_save()
+
+seen_commits = set(
+    save_data.get("seen_commits", [])
+)
+
+saved_fish = save_data.get(
+    "fish",
+    [],
+)
+
+
+# -------------------------
+# First-time migration
+# -------------------------
 
 if not seen_commits:
-    # First run: establish baseline
     seen_commits = {
         commit["sha"]
         for commit in commits
     }
 
-    save_seen_commits(seen_commits)
+    initial_commit = next(
+        (
+            commit
+            for commit in commits
+            if commit["sha"].startswith(
+                INITIAL_GITQUARIUM_SHA
+            )
+        ),
+        None,
+    )
+
+    if initial_commit:
+        saved_fish.append(
+            {
+                "species": "mikey",
+                "commit_sha": initial_commit["sha"],
+                "commit_message": initial_commit["message"],
+                "repo": initial_commit["repo"],
+            }
+        )
+
+        print(
+            "Restored Fish #1:",
+            initial_commit["message"],
+        )
+
+    save_data["seen_commits"] = list(
+        seen_commits
+    )
+
+    save_data["fish"] = saved_fish
+
+    save_game(
+        save_data
+    )
 
     new_commits = []
 
     print(
-        f"Baseline created with {len(seen_commits)} existing commits."
+        f"Baseline created with "
+        f"{len(seen_commits)} existing commits."
     )
 
 else:
@@ -62,7 +121,8 @@ else:
     ]
 
     print(
-        f"GitQuarium found {len(new_commits)} new commits."
+        f"GitQuarium found "
+        f"{len(new_commits)} new commits."
     )
 
 
@@ -126,18 +186,20 @@ class Fish:
             False,
         )
 
-        # Random starting position
         self.x = random.randint(
             100,
-            WIDTH - self.image_right.get_width() - 50,
+            WIDTH
+            - self.image_right.get_width()
+            - 50,
         )
 
         self.y = random.randint(
             50,
-            HEIGHT - self.image_right.get_height() - 50,
+            HEIGHT
+            - self.image_right.get_height()
+            - 50,
         )
 
-        # Random swimming speed
         self.speed_x = random.choice(
             [-2, -1, 1, 2]
         )
@@ -150,14 +212,16 @@ class Fish:
         self.x += self.speed_x
         self.y += self.speed_y
 
-        # Left/right edges
         if self.x <= 0:
             self.x = 0
             self.speed_x = abs(
                 self.speed_x
             )
 
-        elif self.x >= WIDTH - self.image_right.get_width():
+        elif self.x >= (
+            WIDTH
+            - self.image_right.get_width()
+        ):
             self.x = (
                 WIDTH
                 - self.image_right.get_width()
@@ -167,14 +231,16 @@ class Fish:
                 self.speed_x
             )
 
-        # Top/bottom edges
         if self.y <= 0:
             self.y = 0
             self.speed_y = abs(
                 self.speed_y
             )
 
-        elif self.y >= HEIGHT - self.image_right.get_height():
+        elif self.y >= (
+            HEIGHT
+            - self.image_right.get_height()
+        ):
             self.y = (
                 HEIGHT
                 - self.image_right.get_height()
@@ -184,7 +250,6 @@ class Fish:
                 self.speed_y
             )
 
-        # Occasionally change vertical direction
         if random.randint(1, 120) == 1:
             self.speed_y = random.choice(
                 [-1, 0, 1]
@@ -203,6 +268,108 @@ class Fish:
 
 
 # -------------------------
+# Fish species
+# -------------------------
+
+FISH_SPECIES = {
+    "mikey": {
+        "name": "Mikey",
+        "image": "assets/mikey.png",
+    },
+    "maude": {
+        "name": "Maude",
+        "image": "assets/maude.png",
+    },
+    "jake": {
+        "name": "Jake",
+        "image": "assets/jake.png",
+    },
+    "clown": {
+        "name": "Clown",
+        "image": "assets/clown.png",
+    },
+    "goof": {
+        "name": "Goof",
+        "image": "assets/goof.png",
+    },
+    "long": {
+        "name": "Long",
+        "image": "assets/long.png",
+    },
+    "bruce": {
+        "name": "Bruce",
+        "image": "assets/bruce.png",
+    },
+    "boner": {
+        "name": "Boner",
+        "image": "assets/boner.png",
+    },
+    "bella": {
+        "name": "Bella",
+        "image": "assets/bella.png",
+    },
+}
+
+
+# -------------------------
+# Rarity pools
+# -------------------------
+
+RARITY_POOLS = {
+    "common": [
+        "mikey",
+        "maude",
+        "jake",
+    ],
+    "uncommon": [
+        "clown",
+        "goof",
+    ],
+    "rare": [
+        "long",
+        "bruce",
+    ],
+    "epic": [
+        "boner",
+    ],
+    "legendary": [
+        "bella",
+    ],
+}
+
+
+def roll_rarity():
+    roll = random.randint(
+        1,
+        100,
+    )
+
+    if roll <= 55:
+        return "common"
+
+    if roll <= 80:
+        return "uncommon"
+
+    if roll <= 93:
+        return "rare"
+
+    if roll <= 99:
+        return "epic"
+
+    return "legendary"
+
+
+def roll_species():
+    rarity = roll_rarity()
+
+    species = random.choice(
+        RARITY_POOLS[rarity]
+    )
+
+    return species, rarity
+
+
+# -------------------------
 # Bubbles
 # -------------------------
 
@@ -212,7 +379,6 @@ class Bubble:
             "assets/bubble.png"
         ).convert_alpha()
 
-        # Random bubble size
         scale = random.choice(
             [1, 2]
         )
@@ -225,7 +391,6 @@ class Bubble:
             ),
         )
 
-        # Start below the aquarium
         self.x = random.randint(
             20,
             WIDTH - 20,
@@ -236,13 +401,11 @@ class Bubble:
             100,
         )
 
-        # Random upward speed
         self.speed_y = random.uniform(
             0.5,
             1.5,
         )
 
-        # Tiny sideways movement
         self.drift = random.uniform(
             -0.3,
             0.3,
@@ -273,16 +436,27 @@ fish = [
     Fish(
         "James the Fish",
         "assets/james-the-fish.png",
-    ),
-    Fish(
-        "Mikey",
-        "assets/mikey.png",
-    ),
-    Fish(
-        "Maude",
-        "assets/maude.png",
-    ),
+    )
 ]
+
+
+# -------------------------
+# Load owned fish
+# -------------------------
+
+for owned_fish in saved_fish:
+    species_id = owned_fish["species"]
+
+    species = FISH_SPECIES[
+        species_id
+    ]
+
+    fish.append(
+        Fish(
+            species["name"],
+            species["image"],
+        )
+    )
 
 
 # -------------------------
@@ -290,19 +464,37 @@ fish = [
 # -------------------------
 
 for commit in new_commits:
-    commit_fish = Fish(
-        commit["message"],
-        "assets/james-the-fish.png",
+    species_id, rarity = roll_species()
+
+    species = FISH_SPECIES[
+        species_id
+    ]
+
+    fish.append(
+        Fish(
+            species["name"],
+            species["image"],
+        )
     )
 
-    fish.append(commit_fish)
+    saved_fish.append(
+        {
+            "species": species_id,
+            "rarity": rarity,
+            "commit_sha": commit["sha"],
+            "commit_message": commit["message"],
+            "repo": commit["repo"],
+        }
+    )
 
     seen_commits.add(
         commit["sha"]
     )
 
     print(
-        "New fish born:",
+        f"New {rarity.upper()} fish born:",
+        species["name"],
+        "|",
         commit["message"],
         "|",
         commit["repo"],
@@ -310,8 +502,14 @@ for commit in new_commits:
 
 
 if new_commits:
-    save_seen_commits(
+    save_data["seen_commits"] = list(
         seen_commits
+    )
+
+    save_data["fish"] = saved_fish
+
+    save_game(
+        save_data
     )
 
 
@@ -329,31 +527,26 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    # Aquarium background
     screen.blit(
         background,
         (0, 0),
     )
 
-    # Occasionally spawn a bubble
     if random.randint(1, 35) == 1:
         bubbles.append(
             Bubble()
         )
 
-    # Update and draw bubbles
     for bubble in bubbles:
         bubble.update()
         bubble.draw()
 
-    # Remove bubbles that left the screen
     bubbles = [
         bubble
         for bubble in bubbles
         if not bubble.is_gone()
     ]
 
-    # Update and draw our idiots
     for little_guy in fish:
         little_guy.update()
         little_guy.draw()
