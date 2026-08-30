@@ -708,50 +708,25 @@ class Fish:
 # -------------------------
 
 FISH_SPECIES = {
-    "mikey": {
-        "name": "Mikey",
-        "image": "assets/mikey.png",
-    },
-
-    "maude": {
-        "name": "Maude",
-        "image": "assets/maude.png",
-    },
-
-    "jake": {
-        "name": "Jake",
-        "image": "assets/jake.png",
-    },
-
-    "clown": {
-        "name": "Clown",
-        "image": "assets/clown.png",
-    },
-
-    "goof": {
-        "name": "Goof",
-        "image": "assets/goof.png",
-    },
-
-    "long": {
-        "name": "Long",
-        "image": "assets/long.png",
-    },
-
-    "bruce": {
-        "name": "Bruce",
-        "image": "assets/bruce.png",
-    },
-
-    "boner": {
-        "name": "Boner",
-        "image": "assets/boner.png",
-    },
-
-    "bella": {
-        "name": "Bella",
-        "image": "assets/bella.png",
-    },
+    "mikey": {"name": "Mikey", "image": "assets/mikey.png"},
+    "maude": {"name": "Maude", "image": "assets/maude.png"},
+    "jake": {"name": "Jake", "image": "assets/jake.png"},
+    "bentley": {"name": "Bentley", "image": "assets/Bentley.png"},
+    "guy": {"name": "Guy", "image": "assets/Guy.png"},
+    "clown": {"name": "Clown", "image": "assets/clown.png"},
+    "goof": {"name": "Goof", "image": "assets/goof.png"},
+    "puff_daddy": {"name": "Puff Daddy", "image": "assets/Puff Daddy.png"},
+    "long": {"name": "Long", "image": "assets/long.png"},
+    "bruce": {"name": "Bruce", "image": "assets/bruce.png"},
+    "red": {"name": "Red", "image": "assets/Red.png"},
+    "randall": {"name": "Randall", "image": "assets/Randall.png"},
+    "boner": {"name": "Boner", "image": "assets/boner.png"},
+    "apple": {"name": "Apple", "image": "assets/Apple.png"},
+    "ralf": {"name": "Ralf", "image": "assets/Ralf.png"},
+    "lucas": {"name": "Lucas", "image": "assets/Lucas.png"},
+    "patrick": {"name": "Patrick", "image": "assets/Patrick.png"},
+    "bella": {"name": "Bella", "image": "assets/bella.png"},
+    "bubbles": {"name": "Bubbles", "image": "assets/Bubbles.png"},
 }
 
 
@@ -760,29 +735,11 @@ FISH_SPECIES = {
 # -------------------------
 
 RARITY_POOLS = {
-    "common": [
-        "mikey",
-        "maude",
-        "jake",
-    ],
-
-    "uncommon": [
-        "clown",
-        "goof",
-    ],
-
-    "rare": [
-        "long",
-        "bruce",
-    ],
-
-    "epic": [
-        "boner",
-    ],
-
-    "legendary": [
-        "bella",
-    ],
+    "common": ["mikey", "maude", "jake", "bentley", "guy"],
+    "uncommon": ["clown", "goof", "puff_daddy"],
+    "rare": ["long", "bruce", "red", "randall"],
+    "epic": ["boner", "apple", "ralf", "lucas", "patrick"],
+    "legendary": ["bella", "bubbles"],
 }
 
 
