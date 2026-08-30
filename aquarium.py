@@ -459,11 +459,13 @@ sound_off_image = pygame.transform.scale(
 sound_button_x = -20
 sound_button_y = 10
 
+sound_visible_rect = sound_on_image.get_bounding_rect()
+
 sound_button_rect = pygame.Rect(
-    sound_button_x,
-    sound_button_y,
-    sound_on_image.get_width(),
-    sound_on_image.get_height(),
+    sound_button_x + sound_visible_rect.x,
+    sound_button_y + sound_visible_rect.y,
+    sound_visible_rect.width,
+    sound_visible_rect.height,
 )
 
 music_muted = False
@@ -488,6 +490,101 @@ fish_poke_sound = pygame.mixer.Sound(
 fish_poke_sound.set_volume(
     0.5
 )
+
+
+# -------------------------
+# Fish collection UI
+# -------------------------
+
+collection_ui_original = pygame.image.load(
+    "assets/ui/collection_ui.png"
+).convert_alpha()
+
+info_button_original = pygame.image.load(
+    "assets/ui/info_button.png"
+).convert_alpha()
+
+
+def crop_transparent(image):
+    crop_rect = image.get_bounding_rect()
+
+    if crop_rect.width == 0 or crop_rect.height == 0:
+        return image
+
+    return image.subsurface(
+        crop_rect
+    ).copy()
+
+
+# The GIMP exports have transparent canvas around the artwork.
+# Crop that away so positioning is based on the visible pixels.
+collection_ui_original = crop_transparent(
+    collection_ui_original
+)
+
+info_button_original = crop_transparent(
+    info_button_original
+)
+
+COLLECTION_UI_SCALE = 1.6
+INFO_BUTTON_SCALE = 2
+
+collection_ui_image = pygame.transform.scale(
+    collection_ui_original,
+    (
+        int(
+            collection_ui_original.get_width()
+            * COLLECTION_UI_SCALE
+        ),
+        int(
+            collection_ui_original.get_height()
+            * COLLECTION_UI_SCALE
+        ),
+    ),
+)
+
+info_button_image = pygame.transform.scale(
+    info_button_original,
+    (
+        info_button_original.get_width()
+        * INFO_BUTTON_SCALE,
+        info_button_original.get_height()
+        * INFO_BUTTON_SCALE,
+    ),
+)
+
+# Visible collection artwork sits at the bottom center.
+collection_ui_rect = collection_ui_image.get_rect(
+    midbottom=(
+        WIDTH // 2,
+        HEIGHT - 5,
+    )
+)
+
+# Visible collection button sits immediately beside the visible sound icon.
+info_button_rect = info_button_image.get_rect(
+    midleft=(
+        30,
+        42,
+    )
+)
+
+
+info_visible_rect = info_button_image.get_bounding_rect()
+
+info_button_hitbox = pygame.Rect(
+    info_button_rect.x + info_visible_rect.x,
+    info_button_rect.y + info_visible_rect.y,
+    info_visible_rect.width,
+    info_visible_rect.height,
+)
+
+collection_open = False
+collection_index = 0
+
+collection_counter_font = pygame.font.Font(None, 22)
+collection_name_font = pygame.font.Font(None, 18)
+collection_rarity_font = pygame.font.Font(None, 18)
 
 
 # -------------------------
@@ -743,6 +840,329 @@ RARITY_POOLS = {
 }
 
 
+COLLECTION_ORDER = [
+    "james",
+    "mikey", "maude", "jake", "bentley", "guy",
+    "clown", "goof", "puff_daddy",
+    "long", "bruce", "red", "randall",
+    "boner", "apple", "ralf", "lucas", "patrick",
+    "bella", "bubbles",
+]
+
+COLLECTION_RARITY = {
+    species_id: rarity
+    for rarity, species_ids in RARITY_POOLS.items()
+    for species_id in species_ids
+}
+COLLECTION_RARITY["james"] = "starter"
+
+COLLECTION_RARITY_COLORS = {
+    "starter": (255, 215, 50),
+    "common": (220, 220, 220),
+    "uncommon": (90, 220, 120),
+    "rare": (80, 150, 255),
+    "epic": (210, 90, 255),
+    "legendary": (255, 215, 50),
+}
+
+
+def get_collection_species(species_id):
+    if species_id == "james":
+        return {
+            "name": "James the Fish",
+            "image": "assets/james-the-fish.png",
+        }
+
+    return FISH_SPECIES[species_id]
+
+
+def get_discovered_species():
+    discovered = {"james"}
+
+    discovered.update(
+        owned_fish["species"]
+        for owned_fish in saved_fish
+    )
+
+    return discovered
+
+
+def get_collection_arrow_rects():
+    left_arrow_center = (
+        collection_ui_rect.left
+        + int(
+            collection_ui_rect.width
+            * 0.29
+        ),
+        collection_ui_rect.top
+        + int(
+            collection_ui_rect.height
+            * 0.69
+        ),
+    )
+
+    right_arrow_center = (
+        collection_ui_rect.left
+        + int(
+            collection_ui_rect.width
+            * 0.72
+        ),
+        collection_ui_rect.top
+        + int(
+            collection_ui_rect.height
+            * 0.69
+        ),
+    )
+
+    left_arrow_rect = pygame.Rect(
+        0,
+        0,
+        46,
+        38,
+    )
+    left_arrow_rect.center = (
+        left_arrow_center
+    )
+
+    right_arrow_rect = pygame.Rect(
+        0,
+        0,
+        46,
+        38,
+    )
+    right_arrow_rect.center = (
+        right_arrow_center
+    )
+
+    return (
+        left_arrow_rect,
+        right_arrow_rect,
+    )
+
+
+def draw_collection_fish(
+    species_id,
+    center,
+    max_width,
+    max_height,
+):
+    if species_id not in get_discovered_species():
+        return
+
+    species = get_collection_species(species_id)
+
+    fish_image = pygame.image.load(
+        species["image"]
+    ).convert_alpha()
+
+    scale = min(
+        max_width / fish_image.get_width(),
+        max_height / fish_image.get_height(),
+    )
+    scale = max(1, int(scale))
+
+    fish_image = pygame.transform.scale(
+        fish_image,
+        (
+            fish_image.get_width() * scale,
+            fish_image.get_height() * scale,
+        ),
+    )
+
+    clear_rect = pygame.Rect(
+        center[0] - max_width // 2,
+        center[1] - max_height // 2,
+        max_width,
+        max_height,
+    )
+
+    pygame.draw.rect(
+        screen,
+        (0, 0, 0),
+        clear_rect,
+    )
+
+    fish_rect = fish_image.get_rect(
+        center=center
+    )
+
+    screen.blit(
+        fish_image,
+        fish_rect,
+    )
+
+
+def draw_collection():
+    screen.blit(
+        collection_ui_image,
+        collection_ui_rect,
+    )
+
+    total = len(
+        COLLECTION_ORDER
+    )
+
+    previous_species = COLLECTION_ORDER[
+        (collection_index - 1) % total
+    ]
+
+    current_species = COLLECTION_ORDER[
+        collection_index
+    ]
+
+    next_species = COLLECTION_ORDER[
+        (collection_index + 1) % total
+    ]
+
+    center_x = collection_ui_rect.centerx
+
+    # Positions are based on the visible artwork after transparent
+    # canvas has been cropped away.
+    main_center = (
+        center_x,
+        collection_ui_rect.top
+        + int(
+            collection_ui_rect.height
+            * 0.35
+        ),
+    )
+
+    left_center = (
+        collection_ui_rect.left
+        + int(
+            collection_ui_rect.width
+            * 0.15
+        ),
+        collection_ui_rect.top
+        + int(
+            collection_ui_rect.height
+            * 0.53
+        ),
+    )
+
+    right_center = (
+        collection_ui_rect.right
+        - int(
+            collection_ui_rect.width
+            * 0.15
+        ),
+        collection_ui_rect.top
+        + int(
+            collection_ui_rect.height
+            * 0.53
+        ),
+    )
+
+    draw_collection_fish(
+        previous_species,
+        left_center,
+        58,
+        38,
+    )
+
+    draw_collection_fish(
+        current_species,
+        main_center,
+        120,
+        70,
+    )
+
+    draw_collection_fish(
+        next_species,
+        right_center,
+        58,
+        38,
+    )
+
+    discovered = get_discovered_species()
+
+    if current_species in discovered:
+        species = get_collection_species(
+            current_species
+        )
+
+        rarity = COLLECTION_RARITY[
+            current_species
+        ]
+
+        name_text = collection_name_font.render(
+            species["name"].upper(),
+            True,
+            (
+                255,
+                255,
+                255,
+            ),
+        )
+
+        rarity_text = collection_rarity_font.render(
+            rarity.upper(),
+            True,
+            COLLECTION_RARITY_COLORS[
+                rarity
+            ],
+        )
+
+        name_rect = name_text.get_rect(
+            center=(
+                center_x,
+                collection_ui_rect.top
+                + int(
+                    collection_ui_rect.height
+                    * 0.61
+                ),
+            )
+        )
+
+        rarity_rect = rarity_text.get_rect(
+            center=(
+                center_x,
+                collection_ui_rect.top
+                + int(
+                    collection_ui_rect.height
+                    * 0.72
+                ),
+            )
+        )
+
+        screen.blit(
+            name_text,
+            name_rect,
+        )
+
+        screen.blit(
+            rarity_text,
+            rarity_rect,
+        )
+
+    # Page number goes in the small bottom tab built into the artwork.
+    counter_text = collection_counter_font.render(
+        f"{collection_index + 1} / {total}",
+        True,
+        (
+            255,
+            255,
+            255,
+        ),
+    )
+
+    counter_rect = counter_text.get_rect(
+        center=(
+            center_x,
+            collection_ui_rect.top
+            + int(
+                collection_ui_rect.height
+                * 0.91
+            ),
+        )
+    )
+
+    screen.blit(
+        counter_text,
+        counter_rect,
+    )
+
+
 def roll_rarity():
     roll = random.randint(
         1,
@@ -797,18 +1217,6 @@ for commit in new_commits:
             "commit": commit,
         }
     )
-
-    print(
-        "Pending fish reveal:",
-        rarity.upper(),
-        "|",
-        FISH_SPECIES[
-            species_id
-        ][
-            "name"
-        ],
-    )
-
 
 # -------------------------
 # Bubbles
@@ -958,6 +1366,14 @@ def draw_aquarium_scene():
                 sound_button_y,
             ),
         )
+
+    screen.blit(
+        info_button_image,
+        info_button_rect,
+    )
+
+    if collection_open:
+        draw_collection()
 
 
 # -------------------------
@@ -1769,6 +2185,47 @@ while running:
 
 
                 # ---------------------
+                # Collection button
+                # ---------------------
+
+                elif info_button_hitbox.collidepoint(
+                    event.pos
+                ):
+                    mouse_click_sound.play()
+
+                    collection_open = (
+                        not collection_open
+                    )
+
+                # ---------------------
+                # Collection arrows
+                # ---------------------
+
+                elif collection_open:
+                    (
+                        left_arrow_rect,
+                        right_arrow_rect,
+                    ) = get_collection_arrow_rects()
+
+                    if left_arrow_rect.collidepoint(
+                        event.pos
+                    ):
+                        mouse_click_sound.play()
+
+                        collection_index = (
+                            collection_index - 1
+                        ) % len(COLLECTION_ORDER)
+
+                    elif right_arrow_rect.collidepoint(
+                        event.pos
+                    ):
+                        mouse_click_sound.play()
+
+                        collection_index = (
+                            collection_index + 1
+                        ) % len(COLLECTION_ORDER)
+
+                # ---------------------
                 # Fish poke
                 # ---------------------
 
@@ -1866,6 +2323,19 @@ while running:
                 sound_button_y,
             ),
         )
+
+
+    # -------------------------
+    # Collection UI
+    # -------------------------
+
+    screen.blit(
+        info_button_image,
+        info_button_rect,
+    )
+
+    if collection_open:
+        draw_collection()
 
 
     pygame.display.flip()
