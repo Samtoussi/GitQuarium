@@ -13,4 +13,5 @@ seen_commits.json
 save.json
 
 build/
-dist/GitQuarium-Windows.zip
+dist/
+GitQuarium-Windows.zip
