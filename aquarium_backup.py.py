@@ -1,4 +1,5 @@
 import json
+import os
 import random
 import shutil
 import sys
@@ -7,16 +8,10 @@ from pathlib import Path
 
 import pygame
 
-
-def resource_path(relative_path):
-    """Return an absolute path for bundled/read-only game assets."""
-    if getattr(sys, "frozen", False):
-        base_path = Path(sys._MEIPASS)
-    else:
-        base_path = Path(__file__).resolve().parent
-
-    return str(base_path / relative_path)
-
+# When running as a PyInstaller executable,
+# use the bundled resource directory as the working directory.
+if getattr(sys, "frozen", False):
+    os.chdir(sys._MEIPASS)
 
 from github_api import (
     configure_github,
@@ -34,7 +29,7 @@ from gitquarium_config import (
 pygame.init()
 
 app_icon = pygame.image.load(
-    resource_path("assets/docs/gq_logo.png")
+    "assets/docs/gq_logo.png"
 )
 pygame.display.set_icon(app_icon)
 
@@ -98,7 +93,7 @@ def get_clipboard_text():
 def run_first_time_setup():
     # Play the GitQuarium theme quietly while the player connects.
     pygame.mixer.music.load(
-        resource_path("assets/music/gitquarium-theme.mp3")
+        "assets/music/gitquarium-theme.mp3"
     )
     pygame.mixer.music.set_volume(0.12)
     pygame.mixer.music.play(-1)
@@ -112,7 +107,7 @@ def run_first_time_setup():
 
     # Use the actual GitQuarium tank behind the setup UI.
     setup_background_original = pygame.image.load(
-        resource_path("assets/background.png")
+        "assets/background.png"
     ).convert()
 
     setup_background = pygame.transform.scale(
@@ -128,7 +123,7 @@ def run_first_time_setup():
 
     # The mouse becomes one of GitQuarium's own bubbles.
     bubble_cursor_original = pygame.image.load(
-        resource_path("assets/bubble.png")
+        "assets/bubble.png"
     ).convert_alpha()
 
     bubble_cursor = pygame.transform.scale(
@@ -850,10 +845,10 @@ print(
 INTRO_SIZE = 500
 
 intro_paths = [
-    resource_path("assets/intro.png"),
-    resource_path("assets/intro1.png"),
-    resource_path("assets/intro2.png"),
-    resource_path("assets/intro3.png"),
+    "assets/intro.png",
+    "assets/intro1.png",
+    "assets/intro2.png",
+    "assets/intro3.png",
 ]
 
 intro_images = []
@@ -877,15 +872,15 @@ for path in intro_paths:
 
 
 intro_click_sound = pygame.mixer.Sound(
-    resource_path("assets/music/gq_intro_click.mp3")
+    "assets/music/gq_intro_click.mp3"
 )
 
 intro_bang_sound = pygame.mixer.Sound(
-    resource_path("assets/music/gq_intro_bang.mp3")
+    "assets/music/gq_intro_bang.mp3"
 )
 
 intro_ambient_sound = pygame.mixer.Sound(
-    resource_path("assets/music/gq_intro_ambient.mp3")
+    "assets/music/gq_intro_ambient.mp3"
 )
 
 
@@ -1016,7 +1011,7 @@ def get_tank_background(commits):
             "ABSOLUTE SWAMP"
         )
 
-        return resource_path("assets/background-03.png")
+        return "assets/background-03.png"
 
     latest_commit_date = datetime.fromisoformat(
         commits[0]["created_at"].replace(
@@ -1035,28 +1030,28 @@ def get_tank_background(commits):
 
     if days_since_commit <= 2:
         background_path = (
-            resource_path("assets/background.png")
+            "assets/background.png"
         )
 
         tank_status = "CLEAN"
 
     elif days_since_commit <= 4:
         background_path = (
-            resource_path("assets/background-01.png")
+            "assets/background-01.png"
         )
 
         tank_status = "SLIGHTLY DIRTY"
 
     elif days_since_commit <= 6:
         background_path = (
-            resource_path("assets/background-02.png")
+            "assets/background-02.png"
         )
 
         tank_status = "DIRTY"
 
     else:
         background_path = (
-            resource_path("assets/background-03.png")
+            "assets/background-03.png"
         )
 
         tank_status = "ABSOLUTE SWAMP"
@@ -1229,11 +1224,11 @@ background = pygame.transform.scale(
 # -------------------------
 
 sound_on_original = pygame.image.load(
-    resource_path("assets/ui/sound_on.png")
+    "assets/ui/sound_on.png"
 ).convert_alpha()
 
 sound_off_original = pygame.image.load(
-    resource_path("assets/ui/sound_off.png")
+    "assets/ui/sound_off.png"
 ).convert_alpha()
 
 SOUND_BUTTON_SCALE = 2
@@ -1280,7 +1275,7 @@ music_muted = False
 # -------------------------
 
 mouse_click_sound = pygame.mixer.Sound(
-    resource_path("assets/music/gq_mouse_fx.mp3")
+    "assets/music/gq_mouse_fx.mp3"
 )
 
 mouse_click_sound.set_volume(
@@ -1288,7 +1283,7 @@ mouse_click_sound.set_volume(
 )
 
 fish_poke_sound = pygame.mixer.Sound(
-    resource_path("assets/music/gq_fish_fx.mp3")
+    "assets/music/gq_fish_fx.mp3"
 )
 
 fish_poke_sound.set_volume(
@@ -1301,11 +1296,11 @@ fish_poke_sound.set_volume(
 # -------------------------
 
 collection_ui_original = pygame.image.load(
-    resource_path("assets/ui/collection_ui.png")
+    "assets/ui/collection_ui.png"
 ).convert_alpha()
 
 info_button_original = pygame.image.load(
-    resource_path("assets/ui/info_button.png")
+    "assets/ui/info_button.png"
 ).convert_alpha()
 
 
@@ -1396,15 +1391,15 @@ collection_rarity_font = pygame.font.Font(None, 18)
 # -------------------------
 
 reveal_common_sound = pygame.mixer.Sound(
-    resource_path("assets/music/gq_reveal_common.mp3")
+    "assets/music/gq_reveal_common.mp3"
 )
 
 reveal_rare_sound = pygame.mixer.Sound(
-    resource_path("assets/music/gq_reveal_rare.mp3")
+    "assets/music/gq_reveal_rare.mp3"
 )
 
 reveal_legendary_sound = pygame.mixer.Sound(
-    resource_path("assets/music/gq_reveal_legendary.mp3")
+    "assets/music/gq_reveal_legendary.mp3"
 )
 
 reveal_common_sound.set_volume(
@@ -1421,7 +1416,7 @@ reveal_legendary_sound.set_volume(
 
 
 new_fish_sound = pygame.mixer.Sound(
-    resource_path("assets/music/new_fish_sound.mp3")
+    "assets/music/new_fish_sound.mp3"
 )
 
 new_fish_sound.set_volume(
@@ -1434,7 +1429,7 @@ new_fish_sound.set_volume(
 # -------------------------
 
 reveal_image = pygame.image.load(
-    resource_path("assets/fish-reveal.png")
+    "assets/fish-reveal.png"
 ).convert_alpha()
 
 reveal_rect = reveal_image.get_rect(
@@ -1445,7 +1440,7 @@ reveal_rect = reveal_image.get_rect(
 )
 
 spark_original = pygame.image.load(
-    resource_path("assets/spark.png")
+    "assets/spark.png"
 ).convert_alpha()
 
 
@@ -1609,25 +1604,25 @@ class Fish:
 # -------------------------
 
 FISH_SPECIES = {
-    "mikey": {"name": "Mikey", "image": resource_path("assets/mikey.png")},
-    "maude": {"name": "Maude", "image": resource_path("assets/maude.png")},
-    "jake": {"name": "Jake", "image": resource_path("assets/jake.png")},
-    "bentley": {"name": "Bentley", "image": resource_path("assets/Bentley.png")},
-    "guy": {"name": "Guy", "image": resource_path("assets/Guy.png")},
-    "clown": {"name": "Clown", "image": resource_path("assets/clown.png")},
-    "goof": {"name": "Goof", "image": resource_path("assets/goof.png")},
-    "puff_daddy": {"name": "Puff Daddy", "image": resource_path("assets/Puff Daddy.png")},
-    "long": {"name": "Long", "image": resource_path("assets/long.png")},
-    "bruce": {"name": "Bruce", "image": resource_path("assets/bruce.png")},
-    "red": {"name": "Red", "image": resource_path("assets/Red.png")},
-    "randall": {"name": "Randall", "image": resource_path("assets/Randall.png")},
-    "boner": {"name": "Boner", "image": resource_path("assets/boner.png")},
-    "apple": {"name": "Apple", "image": resource_path("assets/Apple.png")},
-    "ralf": {"name": "Ralf", "image": resource_path("assets/Ralf.png")},
-    "lucas": {"name": "Lucas", "image": resource_path("assets/Lucas.png")},
-    "patrick": {"name": "Patrick", "image": resource_path("assets/Patrick.png")},
-    "bella": {"name": "Bella", "image": resource_path("assets/bella.png")},
-    "bubbles": {"name": "Bubbles", "image": resource_path("assets/Bubbles.png")},
+    "mikey": {"name": "Mikey", "image": "assets/mikey.png"},
+    "maude": {"name": "Maude", "image": "assets/maude.png"},
+    "jake": {"name": "Jake", "image": "assets/jake.png"},
+    "bentley": {"name": "Bentley", "image": "assets/Bentley.png"},
+    "guy": {"name": "Guy", "image": "assets/Guy.png"},
+    "clown": {"name": "Clown", "image": "assets/clown.png"},
+    "goof": {"name": "Goof", "image": "assets/goof.png"},
+    "puff_daddy": {"name": "Puff Daddy", "image": "assets/Puff Daddy.png"},
+    "long": {"name": "Long", "image": "assets/long.png"},
+    "bruce": {"name": "Bruce", "image": "assets/bruce.png"},
+    "red": {"name": "Red", "image": "assets/Red.png"},
+    "randall": {"name": "Randall", "image": "assets/Randall.png"},
+    "boner": {"name": "Boner", "image": "assets/boner.png"},
+    "apple": {"name": "Apple", "image": "assets/Apple.png"},
+    "ralf": {"name": "Ralf", "image": "assets/Ralf.png"},
+    "lucas": {"name": "Lucas", "image": "assets/Lucas.png"},
+    "patrick": {"name": "Patrick", "image": "assets/Patrick.png"},
+    "bella": {"name": "Bella", "image": "assets/bella.png"},
+    "bubbles": {"name": "Bubbles", "image": "assets/Bubbles.png"},
 }
 
 
@@ -1674,7 +1669,7 @@ def get_collection_species(species_id):
     if species_id == "james":
         return {
             "name": "James the Fish",
-            "image": resource_path("assets/james-the-fish.png"),
+            "image": "assets/james-the-fish.png",
         }
 
     return FISH_SPECIES[species_id]
@@ -2029,7 +2024,7 @@ for commit in new_commits:
 class Bubble:
     def __init__(self):
         original_image = pygame.image.load(
-            resource_path("assets/bubble.png")
+            "assets/bubble.png"
         ).convert_alpha()
 
         scale = random.choice(
@@ -2102,7 +2097,7 @@ class Bubble:
 fish = [
     Fish(
         "James the Fish",
-        resource_path("assets/james-the-fish.png"),
+        "assets/james-the-fish.png",
     )
 ]
 
@@ -2256,7 +2251,7 @@ def fade_into_aquarium(
 
     # Start game theme
     pygame.mixer.music.load(
-        resource_path("assets/music/gitquarium-theme.mp3")
+        "assets/music/gitquarium-theme.mp3"
     )
 
     pygame.mixer.music.set_volume(
