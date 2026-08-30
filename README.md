@@ -129,7 +129,72 @@ Fish, environments and UI assets were created as custom pixel art.
 
 ## 🚀 Running GitQuarium
 
-> **Note:** GitQuarium v1.0.0 currently requires a small amount of manual setup. Making GitQuarium easier for other people to connect to their own GitHub account is the next step.
+GitQuarium is available as a standalone Windows build.
+
+No Python installation or manual environment setup is required.
+
+### 1. Download GitQuarium
+
+Download the latest Windows build from the [GitQuarium Releases](https://github.com/Samtoussi/GitQuarium/releases) page.
+
+### 2. Extract the ZIP
+
+Extract the downloaded ZIP somewhere on your computer.
+
+GitQuarium needs the included `_internal` folder, so keep the extracted files together.
+
+### 3. Start GitQuarium
+
+Run:
+
+```text
+GitQuarium.exe
+```
+
+The first time you launch the game, GitQuarium will ask you to connect your GitHub account.
+
+Enter your GitHub username and personal access token, then hit **CONNECT**.
+
+Your token is stored locally on your computer and is never included in GitQuarium itself.
+
+That's it.
+
+Your GitHub activity is now fish.
+
+## 🔑 GitHub token
+
+GitQuarium uses the GitHub API to find your commits.
+
+You'll need a GitHub personal access token when connecting your account for the first time.
+
+You can create and manage personal access tokens in your [GitHub Developer Settings](https://github.com/settings/tokens).
+
+Your token is stored only on your computer and should never be shared or committed to a repository.
+
+## 💾 Local data
+
+GitQuarium stores your configuration and aquarium save data locally in:
+
+```text
+%LOCALAPPDATA%\GitQuarium\
+```
+
+This includes:
+
+```text
+config.json
+save.json
+```
+
+`config.json` stores your GitHub connection details.
+
+`save.json` tracks previously seen commits and the fish you've collected.
+
+These files are local to your computer and are not included in the GitQuarium download or repository.
+
+## 🧑‍💻 Running from source
+
+If you'd rather run GitQuarium directly from the source code:
 
 ### 1. Clone the repository
 
@@ -158,7 +223,7 @@ pip install pygame requests python-dotenv
 
 ### 4. Configure GitHub
 
-Create a `.env` file in the project root:
+You can either connect your GitHub account through GitQuarium's first-time setup or create a `.env` file in the project root:
 
 ```env
 GITHUB_USERNAME=your_github_username
@@ -172,30 +237,6 @@ Your `.env` file is ignored by Git and should never be committed.
 ```bash
 python aquarium.py
 ```
-
-That's it.
-
-Your GitHub activity is now fish.
-
-## 💾 Save data
-
-GitQuarium stores your local aquarium state in:
-
-```text
-save.json
-```
-
-This tracks previously seen commits and the fish you've collected.
-
-The save file is local and excluded from Git.
-
-## 🗺️ What's next?
-
-Version **1.0.0** represents the complete first version of the GitQuarium game.
-
-The next goal is not to add more gameplay systems — it's to make GitQuarium easier for other people to use with their own GitHub accounts.
-
-That means improving setup and onboarding without turning a tiny fish game into enterprise infrastructure.
 
 ## 🐠 Philosophy
 
@@ -212,7 +253,7 @@ That's enough.
 ---
 
 <p align="center">
-  <strong>GitQuarium v1.0.0</strong>
+  <strong>GitQuarium</strong>
   <br>
   Your GitHub activity, but fish.
 </p>
