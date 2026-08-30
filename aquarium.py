@@ -519,6 +519,15 @@ reveal_legendary_sound.set_volume(
 )
 
 
+new_fish_sound = pygame.mixer.Sound(
+    "assets/music/new_fish_sound.mp3"
+)
+
+new_fish_sound.set_volume(
+    0.7
+)
+
+
 # -------------------------
 # Reveal assets
 # -------------------------
@@ -1202,7 +1211,7 @@ def create_sparks(
             ]
         )
 
-        spark = pygame.transform.scale(
+        spark_image = pygame.transform.scale(
             spark_original,
             (
                 spark_original.get_width()
@@ -1222,32 +1231,75 @@ def create_sparks(
             ]
         )
 
-        spark = pygame.transform.rotate(
-            spark,
+        spark_image = pygame.transform.rotate(
+            spark_image,
             rotation,
         )
 
         spark_x = random.randint(
             reveal_rect.left + 20,
             reveal_rect.right
-            - spark.get_width()
+            - spark_image.get_width()
             - 20,
         )
 
         spark_y = random.randint(
             reveal_rect.top + 20,
-            reveal_rect.top + 200,
+            reveal_rect.bottom - 20,
         )
 
         sparks.append(
-            (
-                spark,
-                spark_x,
-                spark_y,
-            )
+            {
+                "image": spark_image,
+                "x": float(spark_x),
+                "y": float(spark_y),
+                "speed_y": random.uniform(
+                    0.3,
+                    0.8,
+                ),
+                "drift": random.uniform(
+                    -0.25,
+                    0.25,
+                ),
+            }
         )
 
     return sparks
+
+
+def update_sparks(
+    sparks,
+):
+    for spark in sparks:
+        spark["y"] -= spark["speed_y"]
+        spark["x"] += spark["drift"]
+
+        if (
+            spark["y"]
+            < reveal_rect.top
+            - spark["image"].get_height()
+        ):
+            spark["y"] = float(
+                reveal_rect.bottom
+                + random.randint(
+                    0,
+                    30,
+                )
+            )
+
+            spark["x"] = float(
+                random.randint(
+                    reveal_rect.left + 20,
+                    reveal_rect.right
+                    - spark["image"].get_width()
+                    - 20,
+                )
+            )
+
+            spark["drift"] = random.uniform(
+                -0.25,
+                0.25,
+            )
 
 
 def create_revealed_card(
@@ -1565,6 +1617,8 @@ def run_fish_reveal(
     )
 
 
+    new_fish_sound.play()
+
     while True:
         for event in pygame.event.get():
 
@@ -1675,17 +1729,16 @@ def run_fish_reveal(
 
 
             # Sparks
-            for (
-                spark,
-                spark_x,
-                spark_y,
-            ) in sparks:
+            update_sparks(
+                sparks
+            )
 
+            for spark in sparks:
                 screen.blit(
-                    spark,
+                    spark["image"],
                     (
-                        spark_x,
-                        spark_y,
+                        spark["x"],
+                        spark["y"],
                     ),
                 )
 
