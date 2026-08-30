@@ -11,3 +11,6 @@ __pycache__/
 # Local GitQuarium state
 seen_commits.json
 save.json
+
+build/
+dist/
